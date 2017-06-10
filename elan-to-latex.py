@@ -3,6 +3,7 @@ import io
 import xml.etree.ElementTree as et
 import sys
 import getopt
+import re
 
 def read_config(filepath):
     """Read the script configuration file"""
@@ -11,32 +12,32 @@ def read_config(filepath):
         
         input_files = []
         output_file = ""
-        # small_caps_list = []
+        small_caps_list = []
         
-        in_input = False
-        in_output = False
+        mode = ""
 
         for line in f:
             if line[0] == "#":
                 continue
-            elif line[0:2] == "/E":
-                in_input = True
-            elif line[0:2] == "/O":
-                in_output = True
-                in_input = False
-            elif line[0:2] == "/S":
-                pass
+            elif line[:-1] == "/ELAN INPUT FILES":
+                mode = "in"
+            elif line[:-1] == "/OUTPUT FILE":
+                mode = "out"
+            elif line[:-1] == "/SMALL CAPS LIST":
+                mode = "cap"
             elif line != "\n":
-                if in_input:
+                if mode == "in":
                     input_files.append(line[:-1])
-                elif in_output:
+                elif mode == "out":
                     output_file = line[:-1] 
+                elif mode == "cap":
+                    small_caps_list.append(line[:-1])
   
     except FileNotFoundError:
         print("You supplied an invalid configuration file or the default file doesn't exists")
         sys.exit(2)
 
-    return (input_files, output_file, "SMALL CAPS")
+    return (input_files, output_file, small_caps_list)
 
 def main(argv):
     try:
@@ -57,9 +58,12 @@ def main(argv):
     config_parameters = read_config(filename_in)
     input_files = config_parameters[0]
     output_file = config_parameters[1]
-
+    small_caps = config_parameters[2]
     
     output_file = io.open(output_file, "w", encoding="utf-8")
+    
+    # Filter for non-alphabetic characters
+    filt = re.compile('[^a-zA-Z]')
 
     for filename_in in input_files:
         # Parse XML (ELAN) file
@@ -118,7 +122,11 @@ def main(argv):
                         gloss_elements = root.findall("./TIER[@TIER_ID='A_morph-gls-en']/ANNOTATION/REF_ANNOTATION[@ANNOTATION_REF='%s']" % morph_id)
                         # Build the list of gloss elements
                         for gle in gloss_elements:
-                            word_gloss.append(gle[0].text)
+                            only_alpha = filt.sub("", gle[0].text)
+                            if only_alpha in small_caps:
+                                word_gloss.append("{\sc %s}" % gle[0].text)
+                            else:
+                                word_gloss.append(gle[0].text)                                
 
                     sent_as_morphs.append("".join(word_as_morphs))
                     try:
@@ -130,13 +138,14 @@ def main(argv):
             for e in root.findall("./TIER[@TIER_ID='%s']/ANNOTATION/REF_ANNOTATION[@ANNOTATION_REF='%s']" % ('A_phrase-gls-en', seg_id)):
                 sentence_english = e[0].text
 
-            latex_cmd = "\\begin{exe}\n\\ex\n{\it %s}\n\\gll %s\\\\\n%s\\\\\n\\trans '%s'\n\\end{exe}\n" \
-                % (" ".join(sent_target_lang), " ".join(sent_as_morphs), u" ".join(sent_glossary), sentence_english)
-
             # Get the number identifying this utterance
             segment_label = seg[0][0].text
             # Convert digits into words for Latex command
-            segment_label_ltx = seg_label_to_cmd(segment_label)
+            segment_label_ltx, segment_reference = seg_label_to_cmd_and_red(segment_label)
+
+            # Construct the latex command string
+            latex_cmd = "\\begin{exe}\n\\ex\n{\it %s}\n\\gll %s\\\\\n%s\\\\\n\\trans '%s' [%s]\n\\end{exe}\n" \
+                % (" ".join(sent_target_lang), " ".join(sent_as_morphs), u" ".join(sent_glossary), sentence_english, segment_reference)
 
             # Write the macro for the utterance into the lingex.sty file
             output_file.write("\\newcommand{\\%s}{\n%s}\n\n" % (segment_label_ltx, latex_cmd))
@@ -145,11 +154,17 @@ def main(argv):
 
 ############# HELPER FUNCTION #############
 
-def seg_label_to_cmd(segment_label):
+def seg_label_to_cmd_and_red(segment_label):
     """Convert digit representation of a number into word representation."""
     segment_label_cmd = ""
+    segment_reference = ""
 
     for c in segment_label:
+        if c != "_":
+            segment_reference += c
+        else:
+            segment_reference += " "
+
         if c == '1':
             segment_label_cmd += 'One'
         elif c == '2':
@@ -175,7 +190,7 @@ def seg_label_to_cmd(segment_label):
         else:
             segment_label_cmd += c
 
-    return segment_label_cmd
+    return segment_label_cmd, segment_reference
 
 ###########################################
 

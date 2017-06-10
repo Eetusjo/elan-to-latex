@@ -1,6 +1,6 @@
 # This is a configuration file template for the elan-to-latex script.
 # The configuration file is used to specify the input and output files
-# as well as some parameters that affect Latex formatting. 
+# as well as some parameters that affect LaTeX formatting. 
 
 # Specify input files here, each non-empty and non-commented line 
 # between '/ELAN INPUT FILES' and '/OUTPUT FILE' is expected to contain 
@@ -12,7 +12,7 @@ Haneshwar.ready.for.elan_new.eaf
 
 
 # Specify the output file below. Include only one filename or path. The
-# filename will serve as the LateX package name. The default filename
+# filename will serve as the LaTeX package name. The default filename
 # is 'lingex' and the file will be created in the directory where the 
 # script is run. The extension must be '.sty'.
 
@@ -23,8 +23,10 @@ Haneshwar.ready.for.elan_new.eaf
 /OUTPUT FILE
 lingex.sty
 
-# TODO: Below the user can specify options concerning the LateX formatting,
-# for example list elements that should appear in small caps or italics.
+# Below the user can specify options concerning the LaTeX formatting,
+# for example list gloss elements that should appear in small caps. 
+# Other options might be included in the future.
 
-# /SMALL CAPS LIST
-
+/SMALL CAPS LIST
+neg
+def
