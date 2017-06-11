@@ -141,7 +141,7 @@ def main(argv):
             # Get the number identifying this utterance
             segment_label = seg[0][0].text
             # Convert digits into words for Latex command
-            segment_label_ltx, segment_reference = seg_label_to_cmd_and_red(segment_label)
+            segment_label_ltx, segment_reference = seg_label_to_cmd_and_ref(segment_label)
 
             # Construct the latex command string
             latex_cmd = "\\begin{exe}\n\\ex\n{\it %s}\n\\gll %s\\\\\n%s\\\\\n\\trans '%s' [%s]\n\\end{exe}\n" \
@@ -154,7 +154,7 @@ def main(argv):
 
 ############# HELPER FUNCTION #############
 
-def seg_label_to_cmd_and_red(segment_label):
+def seg_label_to_cmd_and_ref(segment_label):
     """Convert digit representation of a number into word representation."""
     segment_label_cmd = ""
     segment_reference = ""

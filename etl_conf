@@ -4,11 +4,11 @@
 
 # Specify input files here, each non-empty and non-commented line 
 # between '/ELAN INPUT FILES' and '/OUTPUT FILE' is expected to contain 
-# a filename or path. Include file extension (.eaf). You can comment 
-# out any lines you do not want the program to read with '#'
+# a single filename or path. Include file extension (.eaf). You can 
+# comment out any lines you do not want the program to read with '#'.
 
 /ELAN INPUT FILES
-Haneshwar.ready.for.elan_new.eaf
+Haneshwar.ready.for.elan.eaf
 
 
 # Specify the output file below. Include only one filename or path. The
@@ -24,7 +24,7 @@ Haneshwar.ready.for.elan_new.eaf
 lingex.sty
 
 # Below the user can specify options concerning the LaTeX formatting,
-# for example list gloss elements that should appear in small caps. 
+#  presently only list gloss elements that should appear in small caps. 
 # Other options might be included in the future.
 
 /SMALL CAPS LIST
